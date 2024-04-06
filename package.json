@@ -2,7 +2,11 @@
   "dependencies": {
     "@discordjs/core": "^1.1.1",
     "@discordjs/rest": "^2.2.0",
+    "colors": "^1.4.0",
     "discord.js": "^14.14.1",
-    "index.js": "^0.0.3"
+    "google-api-javascript-client": "^0.1.0",
+    "googleapis": "^134.0.0",
+    "index.js": "^0.0.3",
+    "youtube-api": "^3.0.1"
   }
 }

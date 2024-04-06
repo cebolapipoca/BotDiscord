@@ -2,9 +2,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits , REST, GuildChannelManager, GuildChannel} = require('discord.js');
 const {ChannelsAPI} = require('@discordjs/core');
-const { token } = require('./config.json');
+const { token , ApiKey } = require('./config.json');
 const { EventEmitter } = require('node:events');
 const sla = require('@discordjs/rest')
+const {google} = require("googleapis");
+const colors = require("colors");
+
+
+const youtube = google.youtube('v3');
 
 
 
@@ -12,7 +17,46 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds , GatewayIntentBi
 const ChannelApi = new ChannelsAPI();
 const rest = new REST()
 
+function AvisarLive(IdCanal = '')
+{
+    let RetornaLives = new Promise((resolve,  reject)=>
+    {
+        const HoraAtual = new Date();
+        let pica = 2
+        if(HoraAtual.getHours() >= 12)
+        {
+           setInterval(()=>{
 
+            youtube.search.list({
+                'key':ApiKey,
+                'part':'snippet',
+                'eventType':'live',
+                'channelId': IdCanal,
+                'type':"video"
+            }).then(dados=>{
+              if(Object.entries(dados.data.items).length == 0)
+                {
+                    reject(colors.bgCyan("Nenhuma live encontrada. Procurarei novamente em 8 minutos!"));
+                }
+
+                else {
+                    resolve(colors.green("Live encontrada! Processando Link e mandando para servidor..."))
+                }
+            })
+            
+           }, 5000) //480000 = 8 minutos
+        }
+
+        else {
+          reject(colors.red("Bot só funciona das 12:00 horas até 00:00. Espere até um horário adequado!"))
+        }
+    })
+
+    RetornaLives.then(sla=>console.log(sla)).catch(err=>console.log(err));
+}
+
+AvisarLive('UCDoFiMhpOnLFq1uG4RL4xag')
+console.log(colors.bgCyan("Nenhuma live encontrada. Procurarei novamente em 8 minutos!"))
 
 rest.setToken(token)
 
@@ -38,16 +82,17 @@ client.on(Events.InteractionCreate , (interaction)=>{
 
 //cliente.once é tipo o client.on, a diferença é que o once é executado somente uma vez. o Evento ClientReady é se o bot está em execução/logado.
 client.once(Events.ClientReady, async(readyClient)=>{
-    console.log("Usuário Logado com sucesso")
+    console.log(colors.green("Usuário Logado com sucesso"))
     
-    let mensagem = "asdasdad"
+   /* let mensagem = "asdasdad"
     let canal = client.channels.cache.get('767968580859199518')
 
      let arquivo = fs.readFile('./mensagem.txt' , 'utf-8' , (err,data)=>{
         canal.send({'content': data});
-    })
+    })*/
 
-    console.log(arquivo)
+    //console.log(arquivo)
+
     
     //ChannelApi.createMessage(client.channels.resolveId("767968580859199518") , {"content":"Sexo"});
     
