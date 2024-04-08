@@ -36,15 +36,27 @@ function AvisarLive(IdCanal = '')
             }).then(dados=>{
               if(Object.entries(dados.data.items).length == 0)
                 {
-                    reject(colors.bgCyan("Nenhuma live encontrada. Procurarei novamente em 8 minutos!"));
+                    reject(colors.red(dados.data.items));
                 }
 
                 else {
-                    resolve(colors.green("Live encontrada! Processando Link e mandando para servidor..."))
+                    resolve(colors.green('Live encontrada!'))
+
+                    let linkVideo = "https://www.youtube.com/watch?v=" + dados.data.items[0].id.videoId;
+                    console.log(linkVideo)
+                   
+                     let mensagem = "asdasdad"
+                        let canal = client.channels.cache.get('767968580859199518')
+
+                    let arquivo = fs.readFile('./mensagem.txt' , 'utf-8' , (err,data)=>
+                    {
+                        canal.send({'content': data});
+                        canal.send({'content': linkVideo})
+                    })
                 }
             })
             
-           }, 5000) //480000 = 8 minutos
+           }, 10000) //480000 = 8 minutos
         }
 
         else {
@@ -52,11 +64,13 @@ function AvisarLive(IdCanal = '')
         }
     })
 
-    RetornaLives.then(sla=>console.log(sla)).catch(err=>console.log(err));
+   RetornaLives.then(sla=>console.log(sla)).catch(err=>console.log(err));
 }
 
-AvisarLive('UCDoFiMhpOnLFq1uG4RL4xag')
-console.log(colors.bgCyan("Nenhuma live encontrada. Procurarei novamente em 8 minutos!"))
+AvisarLive('UC38itUqncNI6EumU4ZPvaoA')
+//UCfsHw8snr2LaImliDWA52aQ - canal one live
+//CDoFiMhpOnLFq1uG4RL4xag - canal sem live
+
 
 rest.setToken(token)
 
