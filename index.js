@@ -78,10 +78,6 @@ function AvisarLive(IdCanal = '')
    RetornaLives.then(sla=>console.log(sla)).catch(err=>console.log(err));
 }
 
-
-
-
-
 AvisarLive("UC-eDEfMuPi6hOXAJOIbVYPg");
 
 
