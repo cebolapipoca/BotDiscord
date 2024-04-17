@@ -1,116 +1,96 @@
 const fs = require('node:fs');
-const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits , REST, GuildChannelManager, GuildChannel} = require('discord.js');
+const { Client, Events, GatewayIntentBits , REST} = require('discord.js');
 const {ChannelsAPI} = require('@discordjs/core');
 const { token , ApiKey } = require('./config.json');
-const { EventEmitter } = require('node:events');
-const sla = require('@discordjs/rest')
 const {google} = require("googleapis");
 const colors = require("colors");
 
 
 const youtube = google.youtube('v3');
-
-
-
 const client = new Client({ intents: [GatewayIntentBits.Guilds , GatewayIntentBits.MessageContent] }); //instancia da classe cliente, para comunicar diretamente com o bot
 const ChannelApi = new ChannelsAPI();
 const rest = new REST()
 
 function AvisarLive(IdCanal = '')
 {
+    let DataAtual = new Date();
+    console.log(DataAtual.getHours())
     let RetornaLives = new Promise((resolve,  reject)=>
     {
-        const HoraAtual = new Date();
-        let pica = 2
-        if(HoraAtual.getHours() >= 12)
-        {
-           setInterval(()=>{
 
-            youtube.search.list({
-                'key':ApiKey,
-                'part':'snippet',
-                'eventType':'live',
-                'channelId': IdCanal,
-                'type':"video"
-            }).then(dados=>{
-              if(Object.entries(dados.data.items).length == 0)
-                {
-                    reject(colors.red(dados.data.items));
-                }
+        let repetir = true;
 
-                else {
-                    resolve(colors.green('Live encontrada!'))
+        setInterval(()=>
+        {  
+            const HoraAtual = new Date();
 
-                    let linkVideo = "https://www.youtube.com/watch?v=" + dados.data.items[0].id.videoId;
-                    console.log(linkVideo)
-                   
-                     let mensagem = "asdasdad"
-                        let canal = client.channels.cache.get('767968580859199518')
-
-                    let arquivo = fs.readFile('./mensagem.txt' , 'utf-8' , (err,data)=>
+            if(HoraAtual.getHours() >= 12)
+            {
+              
+                    const HoraAtual = new Date();
+                    if(repetir === true) 
                     {
-                        canal.send({'content': data});
-                        canal.send({'content': linkVideo})
-                    })
-                }
-            })
-            
-           }, 10000) //480000 = 8 minutos
-        }
+                        youtube.search.list({
+                            'key':ApiKey,
+                            'part':'snippet',
+                            'eventType':'live',
+                            'channelId': IdCanal,
+                            'type':"video"
+                        }).then(dados=>
+                        {
+                        if(Object.entries(dados.data.items).length == 0)
+                            {
+                                reject(colors.red(dados.data.items));
+                                console.log("nenhuma live encontrada... procurando novamente")
+                            }
 
-        else {
-          reject(colors.red("Bot só funciona das 12:00 horas até 00:00. Espere até um horário adequado!"))
-        }
+                        else {
+                                resolve(colors.green('Live encontrada!'))
+                                console.log("live encontrada em")
+                                let linkVideo = "https://www.youtube.com/watch?v=" + dados.data.items[0].id.videoId;
+                                let canal = client.channels.cache.get('1226380144835559547')
+
+                                let arquivo = fs.readFile('./mensagem.txt' , 'utf-8' , (err,data)=>
+                                {
+                                    canal.send({'content': data + linkVideo})
+                                        console.log(data + linkVideo)
+                                        repetir = false
+                                        console.log("nice")
+                                })
+                            }
+                        })
+                    }
+
+                    else {
+                        console.log('ja fiz meu trabalho hoje :)')
+                        console.log(HoraAtual.getHours())
+                    }
+            }
+
+            if(HoraAtual.getHours() >= 0 && HoraAtual.getHours() < 12)
+                    {
+                        repetir = true;
+                        console.log(colors.yellow("Reset com sucesso"))
+                    }
+        }, 480000) //480000 = 8 minutos
     })
 
    RetornaLives.then(sla=>console.log(sla)).catch(err=>console.log(err));
 }
 
-AvisarLive('UC38itUqncNI6EumU4ZPvaoA')
-//UCfsHw8snr2LaImliDWA52aQ - canal one live
-//CDoFiMhpOnLFq1uG4RL4xag - canal sem live
+
+
+
+
+AvisarLive("UC-eDEfMuPi6hOXAJOIbVYPg");
 
 
 rest.setToken(token)
-
-const comandos = require("./commands/comando1"); //o comando que foi exportado através do module.exports
-const { channel } = require('node:process');
-
-client.login(token); //o bot realiza o login usando o token
-
-//cliente.on determina que um evento será usado.
-
-/*primeiro parametro - o evento através da classe Events. Nesse caso, usamos o evento InteractionCreate, que quando uma interação com o bot for criada
-(como usar um comando por exemplo), este evento será acionado.
-*/
-
-/* segundo parametro - função callback do que será executado quando a condição do evento for atendida. passamos um parametro para essa callback chamado
-interaction. é nesse parametro que é armazenado, pelo evento, as informações da interação.
-*/
-client.on(Events.InteractionCreate , (interaction)=>{ 
-    /*se acontecer uma interação, é mandado para o parametro interaction. Ele vai detectar que foi usado um comando e enviar uma resposta, contido no 
-    método execute do arquivo comando1.js*/
-    comandos.execute(interaction) // chama o método execute, passando a interação como parametro;
-})
+client.login(token); 
 
 //cliente.once é tipo o client.on, a diferença é que o once é executado somente uma vez. o Evento ClientReady é se o bot está em execução/logado.
 client.once(Events.ClientReady, async(readyClient)=>{
     console.log(colors.green("Usuário Logado com sucesso"))
-    
-   /* let mensagem = "asdasdad"
-    let canal = client.channels.cache.get('767968580859199518')
-
-     let arquivo = fs.readFile('./mensagem.txt' , 'utf-8' , (err,data)=>{
-        canal.send({'content': data});
-    })*/
-
-    //console.log(arquivo)
-
-    
-    //ChannelApi.createMessage(client.channels.resolveId("767968580859199518") , {"content":"Sexo"});
-    
-   
 })
 
 
